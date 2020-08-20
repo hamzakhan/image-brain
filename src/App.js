@@ -12,7 +12,7 @@ import 'tachyons';
 const initialState = {
   input: '',
   imageUrl: '',
-  box: {},
+  faceRegions: [],
   route: 'signin',
   isSignedIn: false,
   user: {
@@ -23,6 +23,8 @@ const initialState = {
     joined: ''
   }
 }
+
+
 
 class App extends Component {
   constructor() {
@@ -42,21 +44,23 @@ class App extends Component {
     })
   }
 
-  calculateFaceLocation = (data) => {
-    const clarifaiFace = data.outputs[0].data.regions[0].region_info.bounding_box;
-    const image = document.getElementById('inputimage');
-    const width = Number(image.width);
-    const height = Number(image.height);
-    return {
-      leftCol: clarifaiFace.left_col * width,
-      topRow: clarifaiFace.top_row * height,
-      rightCol: width - (clarifaiFace.right_col * width),
-      bottomRow: height - (clarifaiFace.bottom_row * height)
-    }
+  calculateFaceLocations = (data) => {
+    return data.outputs[0].data.regions.map(face => {
+      const clarifaiFace = face.region_info.bounding_box;
+      const image = document.getElementById('inputimage');
+      const width = Number(image.width);
+      const height = Number(image.height);
+      return {
+        leftCol: clarifaiFace.left_col * width,
+        topRow: clarifaiFace.top_row * height,
+        rightCol: width - (clarifaiFace.right_col * width),
+        bottomRow: height - (clarifaiFace.bottom_row * height)
+      }
+    })
   }
 
-  displayFaceBox = (box) => {
-    this.setState({box: box})
+  displayFaceRegions = (regions) => {
+    this.setState({faceRegions: regions})
   }
 
   onInputChange = (event) => {
@@ -66,7 +70,7 @@ class App extends Component {
   onButtonSubmit = () => {
     this.setState({imageUrl: this.state.input});
     fetch('https://shrouded-wave-31054.herokuapp.com/imageurl', {
-            method: 'post',
+            method: 'post', 
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 input: this.state.input
@@ -88,7 +92,7 @@ class App extends Component {
         })
         .catch(console.log)
       }
-      this.displayFaceBox(this.calculateFaceLocation(response))
+      this.displayFaceRegions(this.calculateFaceLocations(response))
     })
     .catch(err => console.log(err))
   }
@@ -112,7 +116,7 @@ class App extends Component {
             onInputChange={this.onInputChange} 
             onButtonSubmit={this.onButtonSubmit}
           />
-          <FaceRecognition box={this.state.box} imageUrl={this.state.imageUrl}/>
+          <FaceRecognition faceRegions={this.state.faceRegions} imageUrl={this.state.imageUrl}/>
         </div>
       case 'signin':
       case 'signout':
