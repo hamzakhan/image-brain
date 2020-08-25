@@ -6,7 +6,8 @@ class Signin extends React.Component {
         super();
         this.state= {
             signInEmail: '',
-            signInPassword: ''
+            signInPassword: '',
+            error: ''
         }
     }
 
@@ -19,6 +20,7 @@ class Signin extends React.Component {
     }
 
     onSubmitSignIn = () => {
+        this.setState({error: ''})
         fetch('https://shrouded-wave-31054.herokuapp.com/signin', {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
@@ -32,6 +34,8 @@ class Signin extends React.Component {
                 if (user.id) {
                     this.props.loadUser(user);
                     this.props.onRouteChange('home');
+                } else {
+                    this.setState({error: 'Invalid username or password.'})
                 }
             })      
     }
@@ -62,6 +66,9 @@ class Signin extends React.Component {
                     </div>
                     <div className="lh-copy mt3">
                         <p onClick={() => onRouteChange('register')} className="f6 link dim black db pointer">Register</p>
+                    </div>
+                    <div className="pa2 h1 light-red">
+                        {this.state.error}
                     </div>
                 </div>
             </main>

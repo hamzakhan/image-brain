@@ -7,7 +7,8 @@ class Register extends React.Component {
         this.state = {
             name: '',
             email: '',
-            password: ''
+            password: '',
+            error: ''
         }
     }
 
@@ -24,7 +25,11 @@ class Register extends React.Component {
     }
 
     onSubmitRegister = () => {
-        fetch('https://shrouded-wave-31054.herokuapp.com/register', {
+        this.setState({error: ''})
+        if (!(this.state.name && this.state.email && this.state.password)){
+            this.setState({error: 'Please fill all fields.'})
+        } else {
+            fetch('https://shrouded-wave-31054.herokuapp.com/register', {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -38,8 +43,11 @@ class Register extends React.Component {
                 if (user.id) {
                     this.props.loadUser(user);
                     this.props.onRouteChange('home');
+                } else {
+                    this.setState({error: 'Email is already registered.'})
                 }
-            })      
+            })
+        }
     }
 
     render() {       
@@ -65,9 +73,12 @@ class Register extends React.Component {
                         <div className="">
                             <input 
                                 onClick={this.onSubmitRegister}
-                                className="b br1 ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib" 
+                                className="b br1 ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib mb3" 
                                 type="submit" 
                                 value="Register"/>
+                        </div>
+                        <div className="pa2 h1 light-red">
+                            {this.state.error}
                         </div>
                     </div>
                 </main>
